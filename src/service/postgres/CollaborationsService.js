@@ -3,7 +3,7 @@ const { nanoid } = require('nanoid');
 const { Pool } = require('pg');
 const InvariantError = require('../../exception/InvarianError');
 
-class CollaborationService {
+class collaborationsService {
   constructor() {
     this._pool = new Pool();
   }
@@ -48,4 +48,4 @@ class CollaborationService {
   }
 }
 
-module.exports = CollaborationService;
+module.exports = collaborationsService;

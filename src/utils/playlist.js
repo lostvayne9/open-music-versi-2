@@ -1,6 +1,9 @@
-const mapDBToModelPlaylist = ({ id, name, username }) => ({
+const mapDBToModelPlaylist = ({
+  id, name, owner, username,
+}) => ({
   id,
   name,
+  owner,
   username,
 });
 

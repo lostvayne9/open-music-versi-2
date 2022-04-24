@@ -72,7 +72,7 @@ const init = async () => {
     validate: (artifacts) => ({
       isValid: true,
       credential: {
-        id: artifacts.decode.payload.id,
+        id: artifacts.decoded.payload.id,
       },
     }),
   });

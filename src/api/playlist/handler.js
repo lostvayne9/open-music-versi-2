@@ -7,12 +7,12 @@ class PlaylistHandler {
     this._songService = songService;
     this._validator = validator;
 
+    // playlist
     this.postPlaylistHandler = this.postPlaylistHandler.bind(this);
     this.getPlaylistHandler = this.getPlaylistHandler.bind(this);
     this.deletePlaylistByIdHandler = this.deletePlaylistByIdHandler.bind(this);
-
-    this.getPlaylistByIdHandler = this.getPlaylistByIdHandler.bind(this);
-
+    //--
+    // this.getPlaylistByIdHandler = this.getPlaylistByIdHandler.bind(this);
     this.postSongPlaylistHandler = this.postSongPlaylistHandler.bind(this);
     this.getSongPlaylistHandler = this.getSongPlaylistHandler.bind(this);
     this.deleteSongPlaylistHandler = this.deleteSongPlaylistHandler.bind(this);
@@ -24,42 +24,12 @@ class PlaylistHandler {
       const { name } = request.payload;
       const { id: credentialId } = request.auth.credentials;
       const playlistId = await this._playlistService.addPlaylist({ name, credentialId });
-      const response = h.response({
-        status: 'success',
-        message: 'Lagu berhasil ditambahkan',
-        data: {
-          playlistId,
-        },
-      });
-      response.code(201);
-      return response;
-    } catch (error) {
-      if (error instanceof ClientError) {
-        const response = h.response({
-          status: 'fail',
-          message: error.message,
-        });
-        response.code(error.statusCode);
-        return response;
-      }
-      const response = h.response({
-        status: 'error',
-        message: 'Maaf terdapat kendala pada server',
-      });
-      response.code(500);
-      console.error(error);
-      return response;
-    }
-  }
 
-  async getPlaylistHandler(request, h) {
-    try {
-      const { id: credentialId } = request.auth.credentials;
-      const playlist = await this._playlistService.getPlaylist(credentialId);
       return {
         status: 'success',
+        message: 'Lagu  berhasil ditambahkan',
         data: {
-          playlist,
+          playlistId,
         },
       };
     } catch (error) {
@@ -76,18 +46,14 @@ class PlaylistHandler {
         message: 'Maaf terdapat kendala pada server',
       });
       response.code(500);
-      console.error(error);
       return response;
     }
   }
 
-  async getPlaylistByIdHandler(request, h) {
+  async getPlaylistHandler(request, h) {
     try {
-      const { id } = request.params;
       const { id: credentialId } = request.auth.credentials;
-
-      await this._playlistService.verifyAccessPlaylist(id, credentialId);
-      const playlist = await this._playlistService.getPlaylistById(id);
+      const playlist = await this._playlistService.getPlaylist(credentialId);
       return {
         status: 'success',
         data: {
@@ -138,21 +104,56 @@ class PlaylistHandler {
         message: 'Maaf terdapat kendala pada server',
       });
       response.code(500);
-      console.error(error);
       return response;
     }
   }
 
+  //-----
+  /*
+  async getPlaylistByIdHandler(request, h) {
+    try {
+      const { id } = request.params;
+      const { id: credentialId } = request.auth.credentials;
+
+      await this._playlistService.verifyAccessPlaylist(id, credentialId);
+      const playlist = await this._playlistService.getPlaylistById(id);
+      return {
+        status: 'success',
+        data: {
+          playlist,
+        },
+      };
+    } catch (error) {
+      if (error instanceof ClientError) {
+        const response = h.response({
+          status: 'fail',
+          message: error.message,
+        });
+        response.code(error.statusCode);
+        return response;
+      }
+      const response = h.response({
+        status: 'error',
+        message: 'Maaf terdapat kendala pada server',
+      });
+      response.code(500);
+      return response;
+    }
+  } * */
+  // -- playsong
   async postSongPlaylistHandler(request, h) {
     try {
-      this._validator.validatePostSongPlaylistPayload(request.payload);
       const { songId } = request.payload;
       const { id: playlistId } = request.params;
+      this._validator.validatePostSongPlaylistPayload(request.payload);
       const { id: credentialId } = request.auth.credentials;
 
       await this._playlistService.verifyAccessPlaylist(playlistId, credentialId);
       await this._songService.getSongById(songId);
+
       const SongId = await this._playlistService.addSongToPlaylist(playlistId, songId);
+      await this._playlistService.addPlaylistActivities(playlistId, songId, credentialId, 'add');
+
       const response = h.response({
         status: 'success',
         message: 'Lagu berhasil ditambahkan',
@@ -176,18 +177,18 @@ class PlaylistHandler {
         message: 'Maaf terdapat kendala pada server',
       });
       response.code(500);
-      console.error(error);
       return response;
     }
   }
 
   async getSongPlaylistHandler(request, h) {
     try {
-      const { id } = request.params;
       const { id: credentialId } = request.auth.credentials;
-
-      await this._playlistService.verifyAccessPlaylist(id, credentialId);
-      const playlist = await this._playlistService.getPlaylistSong(id);
+      const { id: playlistId } = request.params;
+      await this._playlistService.verifyAccessPlaylist(playlistId, credentialId);
+      const playlist = await this._playlistService.getPlaylistSong(playlistId);
+      const songs = await this._playlistService.getSongsByPlaylistId(playlistId);
+      playlist.songs = songs;
 
       return {
         status: 'success',
@@ -209,37 +210,6 @@ class PlaylistHandler {
         message: 'Maaf terdapat kendala pada server',
       });
       response.code(500);
-      console.error(error);
-      return response;
-    }
-  }
-
-  async getPlaylistByActivitiesHandler(request, h) {
-    try {
-      const { id } = request.params;
-      const { id: credentialId } = request.auth.credentials;
-      await this.playlistService.verifyAccessPlaylist(id, credentialId);
-      const activities = await this._playlistService.getPlaylistActivities(id);
-      return {
-        status: 'success',
-        data: {
-          activities,
-        },
-      };
-    } catch (error) {
-      if (error instanceof ClientError) {
-        const response = h.response({
-          status: 'fail',
-          message: error.message,
-        });
-        response.code(error.statusCode);
-        return response;
-      }
-      const response = h.response({
-        status: 'fail',
-        message: 'Maaf. terdapat kendala pada server',
-      });
-      response.code(500);
       return response;
     }
   }
@@ -248,10 +218,11 @@ class PlaylistHandler {
     try {
       const { id: playlistId } = request.params;
       const { songId } = request.payload;
+      this._validator.validatePostSongPlaylistPayload(request.payload);
       const { id: credentialId } = request.auth.credentials;
-
       await this._playlistService.verifyAccessPlaylist(playlistId, credentialId);
       await this._playlistService.deleteSongFromPlaylist(playlistId, songId);
+      await this._playlistService.addPlaylistActivities(playlistId, songId, credentialId, 'delete');
 
       return {
         status: 'success',
@@ -271,7 +242,40 @@ class PlaylistHandler {
         message: 'Maaf terdapat kendala pada server',
       });
       response.code(500);
-      console.error(error);
+      return response;
+    }
+  }
+
+  // ------
+  async getPlaylistByActivitiesHandler(request, h) {
+    try {
+      let activities = null;
+      const { id } = request.params;
+      const { id: credentialId } = request.auth.credentials;
+      await this.playlistService.verifyAccessPlaylist(id, credentialId);
+
+      activities = await this._playlistService.getPlaylistActivities(id, credentialId);
+      return {
+        status: 'success',
+        data: {
+          playlistId: id,
+          activities,
+        },
+      };
+    } catch (error) {
+      if (error instanceof ClientError) {
+        const response = h.response({
+          status: 'fail',
+          message: error.message,
+        });
+        response.code(error.statusCode);
+        return response;
+      }
+      const response = h.response({
+        status: 'fail',
+        message: 'Maaf. terdapat kendala pada server',
+      });
+      response.code(500);
       return response;
     }
   }

@@ -3,10 +3,10 @@
 const ClientError = require('../../exception/ClientError');
 
 class AuthenticationsHandler {
-  constructor(authenticationsService, tokenManager, usersService, validator) {
+  constructor(authenticationsService, usersService, tokenManager, validator) {
     this._authenticationsService = authenticationsService;
-    this._tokenManager = tokenManager;
     this._usersService = usersService;
+    this._tokenManager = tokenManager;
     this._validator = validator;
     this.PostAuthenticationsHandler = this.PostAuthenticationsHandler.bind(this);
     this.PutAuthenticationsHandler = this.PutAuthenticationsHandler.bind(this);
@@ -17,7 +17,7 @@ class AuthenticationsHandler {
     try {
       this._validator.validatePostAuthenticationsPayload(request.payload);
       const { username, password } = request.payload;
-      const id = await this._usersService.verifyUserCredential(username, password);
+      const id = await this._usersService.verifyUserCredential({ username, password });
 
       const accessToken = this._tokenManager.generateAccessToken({ id });
       const refreshToken = this._tokenManager.generateRefreshToken({ id });

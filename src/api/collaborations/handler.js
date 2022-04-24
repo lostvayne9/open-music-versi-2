@@ -4,11 +4,12 @@
 const ClientError = require('../../exception/ClientError');
 
 class CollaborationsHandler {
-  constructor(CollaborationsService, PlaylistService, UsersService, validator) {
-    this._CollaborationsService = CollaborationsService;
-    this._PlaylistService = PlaylistService;
-    this._UsersService = UsersService;
+  constructor(collaborationsService, playlistService, usersService, validator) {
+    this._collaborationsService = collaborationsService;
+    this._playlistService = playlistService;
+    this._usersService = usersService;
     this._validator = validator;
+
     this.postCollaborationsHandler = this.postCollaborationsHandler.bind(this);
     this.deleteCollaborationsHandler = this.deleteCollaborationsHandler.bind(this);
   }
@@ -19,10 +20,10 @@ class CollaborationsHandler {
       const { id: credentialId } = request.auth.credentials;
       const { playlistId, userId } = request.payload;
 
-      await this._PlaylistService.verifyPlaylistOwner(playlistId, userId);
-      await this._UsersService.getUserById(userId);
-
-      const collaborationsId = this._CollaborationsService.addCollaborations(playlistId, credentialId);
+      await this._playlistService.getPlaylistById(playlistId);
+      await this._usersService.getUserById(userId);
+      await this._playlistService.verifyPlaylistOwner(playlistId, credentialId);
+      const collaborationsId = this._collaborationsService.addCollaborations(playlistId, userId);
       const response = h.response({
         status: 'success',
         message: 'Collaborations telah ditambahkan',

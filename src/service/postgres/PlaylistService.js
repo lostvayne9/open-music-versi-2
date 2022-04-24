@@ -11,10 +11,10 @@ class PlaylistService {
     this._collaborationsService = collaborationsService;
   }
 
-  async addPlaylist({ name, credentialId: owner }) {
+  async addPlaylist(name, { credentialId: owner }) {
     const id = `playlist-${nanoid(16)}`;
     const query = {
-      text: 'INSERT INTO playlist VALUES($1,$2,$3) RETURNING id',
+      text: 'INSERT INTO playlist VALUES ( $1, $2, $3) RETURNING id',
       values: [id, name, owner],
     };
 
@@ -25,7 +25,7 @@ class PlaylistService {
     return result.rows[0].id;
   }
 
-  async GetPlaylist(owner) {
+  async GetPlaylist({ credentialId: owner }) {
     const query = {
       text: 'SELECT playlist.id, playlist.name, users.username FROM playlist LEFT JOIN users ON users.id = playlist.owner LEFT JOIN playlist_collaborations ON playlist_collaborations.playlistid = playlist.id WHERE playlist_collaborations.userid = $1 OR playlist.owner = $1',
       values: [owner],
@@ -35,7 +35,7 @@ class PlaylistService {
     return result.rows;
   }
 
-  async getPlaylistById(id) {
+  async getPlaylistById({ playlistId: id }) {
     const query = {
       text: 'SELECT playlist.id, playlist.name, users.username FROM playlist LEFT JOIN users ON users.id = playlist.owner WHERE playlist.id = $1 ',
       values: [id],
@@ -60,7 +60,7 @@ class PlaylistService {
     }
   }
 
-  async verifyPlaylistOwner(id, owner) {
+  async verifyPlaylistOwner(id, { credentialId: owner }) {
     const query = {
       text: 'SELECT * FROM playlist WHERE id = $1',
       values: [id],
@@ -77,7 +77,7 @@ class PlaylistService {
     }
   }
 
-  async verifyAccessPlaylist(playlistId, userId) {
+  async verifyAccessPlaylist(playlistId, { credentialId: userId }) {
     try {
       await this.verifyPlaylistOwner(playlistId, userId);
     } catch (error) {
@@ -120,7 +120,7 @@ class PlaylistService {
 
   async getPlaylistSong(playlistId) {
     const result = await this._pool.query({
-      text: 'SELECT songs.id, songs.title, songs.performer FROM songs LEFT JOIN playlit_song ON playlist_song.songid = songs.id WHERE playlist_song.playlistid = $1',
+      text: 'SELECT songs.id, songs.title, songs.performer FROM songs LEFT JOIN playlist_song ON playlist_song.songid = songs.id WHERE playlist_song.playlistid = $1',
       values: [playlistId],
     });
     return result.rows;

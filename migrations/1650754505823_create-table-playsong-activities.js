@@ -17,7 +17,7 @@ exports.up = (pgm) => {
       notNull: true,
     },
     action: {
-      type: 'VARCHAR(50)',
+      type: 'TEXT',
       notNull: true,
     },
     time: {

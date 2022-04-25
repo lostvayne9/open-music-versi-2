@@ -78,10 +78,10 @@ class PlaylistService {
     }
   }
 
-  async verifyAccessPlaylist(playlistId, userId) {
+  async verifyAccessPlaylist({ playlistId, userId }) {
     try {
-      const id = playlistId;
-      const owner = userId;
+      const id = { playlistId };
+      const owner = { userId };
 
       await this.verifyPlaylistOwner(id, owner);
     } catch (error) {

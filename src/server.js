@@ -23,7 +23,7 @@ const AuthenticationService = require('./service/postgres/AuthenticationsService
 const authentications = require('./api/authentications');
 
 // playlist
-const playlist = require('./api/playlist');
+const playlists = require('./api/playlist');
 const PlaylistService = require('./service/postgres/PlaylistService');
 const CollaborationsService = require('./service/postgres/CollaborationsService');
 
@@ -109,7 +109,7 @@ const init = async () => {
       },
     },
     {
-      plugin: playlist,
+      plugin: playlists,
       options: {
         playlistService,
         songService,

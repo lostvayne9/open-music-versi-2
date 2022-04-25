@@ -7,12 +7,10 @@ exports.up = (pgm) => {
     playlistid: {
       type: 'VARCHAR(50)',
       notNull: true,
-      unique: true,
     },
     songid: {
       type: 'VARCHAR(50)',
       notNull: true,
-      unique: true,
     },
   });
   pgm.addConstraint(
@@ -29,5 +27,5 @@ exports.up = (pgm) => {
 };
 
 exports.down = (pgm) => {
-  pgm.dropTable('playlist-song');
+  pgm.dropTable('playlist_song');
 };

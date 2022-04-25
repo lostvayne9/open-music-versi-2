@@ -28,7 +28,7 @@ class PlaylistService {
 
   async GetPlaylist(owner) {
     const query = {
-      text: 'SELECT playlist.id as Id_playlist, playlist.name, users.username FROM playlist LEFT JOIN users ON users.id = playlist.owner LEFT JOIN playlist_collaborations ON playlist_collaborations.playlistid = playlist.id WHERE users.id = $1 OR playlist_collaborations.userid = $1',
+      text: 'SELECT playlist.id, playlist.name, users.username FROM playlist LEFT JOIN users ON users.id = playlist.owner LEFT JOIN playlist_collaborations ON playlist_collaborations.playlistid = playlist.id WHERE users.id = $1 OR playlist_collaborations.userid = $1',
       values: [owner],
     };
     const result = await this._pool.query(query);
@@ -95,7 +95,7 @@ class PlaylistService {
 
   // -----------------
   async addSongToPlaylist(playlistId, songId) {
-    const id = `playlist-song-${nanoid(16)}`;
+    const id = `playlistSong-${nanoid(16)}`;
     const query = {
       text: 'INSERT INTO playlist_song VALUES($1,$2,$3) RETURNING id',
       values: [id, playlistId, songId],
@@ -129,7 +129,7 @@ class PlaylistService {
       throw new NotFoundError('Lagu tidak ada');
     }
 
-    return result.rows[0];
+    return result.rows;
   }
 
   async getSongsByPlaylistId(playlistId) {

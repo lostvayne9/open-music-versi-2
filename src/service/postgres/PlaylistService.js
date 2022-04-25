@@ -80,7 +80,10 @@ class PlaylistService {
 
   async verifyAccessPlaylist(playlistId, userId) {
     try {
-      await this.verifyPlaylistOwner(playlistId, userId);
+      const id = playlistId;
+      const owner = userId;
+
+      await this.verifyPlaylistOwner(id, owner);
     } catch (error) {
       if (error instanceof ClientError) {
         throw error;

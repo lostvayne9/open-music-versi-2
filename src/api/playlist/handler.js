@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /* eslint-disable no-underscore-dangle */
 const ClientError = require('../../exception/ClientError');
 
@@ -253,7 +254,7 @@ class PlaylistHandler {
     }
   }
 
-  // ------
+  /* ------
   async getPlaylistByActivitiesHandler(request, h) {
     try {
       let activities = null;
@@ -286,6 +287,7 @@ class PlaylistHandler {
       return response;
     }
   }
+  * */
 }
 
 module.exports = PlaylistHandler;

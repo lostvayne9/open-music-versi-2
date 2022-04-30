@@ -3,14 +3,23 @@ const ClientError = require('../../exception/ClientError');
 
 /* eslint-disable no-underscore-dangle */
 class AlbumHandler {
-  constructor(service, validator) {
+  constructor(service, validator, storageService, uploadValidator) {
     this._service = service;
     this._validator = validator;
+    this._storageService = storageService;
+    this._uploadValidator = uploadValidator;
 
     this.postAlbumHandler = this.postAlbumHandler.bind(this);
     this.getAlbumByIdHandler = this.getAlbumByIdHandler.bind(this);
     this.putAlbumByIdHandler = this.putAlbumByIdHandler.bind(this);
     this.deleteAlbumByIdHandler = this.deleteAlbumByIdHandler.bind(this);
+
+    // bind upload cover album
+    this.postUploadImageHandler = this.postUploadImageHandler.bind(this);
+
+    // bind likes
+    this.postLikeAlbumHandler = this.postLikeAlbumHandler.bind(this);
+    this.getLikeAlbumHandler = this.postLikeAlbumHandler.bind(this);
   }
 
   async postAlbumHandler(request, h) {
@@ -52,14 +61,17 @@ class AlbumHandler {
   async getAlbumByIdHandler(request, h) {
     try {
       const { id } = request.params;
-      const album = await this._service.getAlbumById(id);
+      const { album, isCache = 0 } = await this._service.getAlbumById(id);
 
-      return {
+      const response = h.response({
         status: 'success',
         data: {
           album,
         },
-      };
+      });
+      response.code(200);
+      if (isCache) response.header('X-Data-Source', 'cache');
+      return response;
     } catch (error) {
       if (error instanceof ClientError) {
         const response = h.response({
@@ -127,6 +139,116 @@ class AlbumHandler {
       const response = h.response({
         status: 'error',
         message: 'Maaf, terdapat kendala pada server',
+      });
+      response.code(500);
+      console.error(error);
+      return response;
+    }
+  }
+
+  // upload cover album
+
+  async postUploadImageHandler(request, h) {
+    try {
+      const { cover } = request.payload;
+      this._uploadValidator.validateImageHeaders(cover.hapi.headers);
+
+      const filename = await this._storageService.writeFile(cover, cover.hapi);
+
+      const { id } = request.params;
+
+      const path = `http://${process.env.HOST}:${process.env.PORT}/albums/images/${filename}`;
+      await this._service.addCoverAlbum(id, path);
+
+      const response = h.response({
+        status: 'success',
+        message: 'Sampul berhasil diunggah',
+      });
+      response.code(201);
+      return response;
+    } catch (error) {
+      if (error instanceof ClientError) {
+        const response = h.response({
+          status: 'fail',
+          message: error.message,
+        });
+        response.code(error.statusCode);
+        return response;
+      }
+
+      const response = h.response({
+        status: 'error',
+        message: 'Maaf. terdapat kendala pada server',
+      });
+      response.code(500);
+      console.error(error);
+      return response;
+    }
+  }
+
+  // like
+
+  async postLikeAlbumHandler(request, h) {
+    try {
+      const { id } = request.params;
+      const { id: userId } = request.auth.credentials;
+
+      await this._service.getAlbumById(id);
+      await this._service.addLikeAlbums(userId, id);
+      const response = h.response({
+        status: 'success',
+        message: 'Like album berhasil ditambahkan ke daftar ',
+      });
+      response.code(201);
+      return response;
+    } catch (error) {
+      if (error instanceof ClientError) {
+        const response = h.response({
+          status: 'fail',
+          message: error.message,
+        });
+        response.code(error.statusCode);
+        return response;
+      }
+
+      const response = h.response({
+        status: 'error',
+        message: 'Maaf. terdapat kendala pada server',
+      });
+      response.code(500);
+      console.error(error);
+      return response;
+    }
+  }
+
+  async getLikeAlbumHandler(request, h) {
+    try {
+      const { albumid } = request.params;
+      const { likes, isCache = 0 } = await this._service.getLikeAlbum(albumid);
+
+      const response = h.response({
+        status: 'success',
+        data: {
+          likes: likes.length,
+        },
+      });
+      response.code(200);
+
+      if (isCache) response.header('X-Data-Source', 'cache');
+      return response;
+    } catch (error) {
+      if (error instanceof ClientError) {
+        const response = h.response({
+          status: 'fail',
+          message: error.message,
+        });
+        response.code(error.statusCode);
+        return response;
+      }
+
+      const response = h.response({
+        status: 'error',
+        message: 'Maaf. terdapat kendala pada server',
       });
       response.code(500);
       console.error(error);

@@ -20,10 +20,11 @@ class CollaborationsHandler {
       const { id: credentialId } = request.auth.credentials;
       const { playlistId, userId } = request.payload;
 
-      await this._playlistService.getPlaylistById(playlistId);
       await this._usersService.getUserById(userId);
+      await this._playlistService.getPlaylistById(playlistId);
+
       await this._playlistService.verifyPlaylistOwner(playlistId, credentialId);
-      const collaborationsId = this._collaborationsService.addCollaborations(playlistId, userId);
+      const collaborationsId = this._collaborationsService.addCollaboration(playlistId, userId);
       const response = h.response({
         status: 'success',
         message: 'Collaborations telah ditambahkan',

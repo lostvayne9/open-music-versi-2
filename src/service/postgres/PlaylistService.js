@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /* eslint-disable no-underscore-dangle */
 const { nanoid } = require('nanoid');
 const { Pool } = require('pg');
@@ -28,7 +29,7 @@ class PlaylistService {
 
   async GetPlaylist(owner) {
     const query = {
-      text: 'SELECT playlist.id, playlist.name, users.username FROM playlist LEFT JOIN users ON users.id = playlist.owner LEFT JOIN playlist_collaborations ON playlist_collaborations.playlistid = playlist.id WHERE users.id = $1 OR playlist_collaborations.userid = $1',
+      text: 'SELECT playlist.id,playlist.name, users.username FROM playlist LEFT JOIN users ON users.id = playlist.owner LEFT JOIN playlist_collaborations ON playlist_collaborations.playlistid = playlist.id   WHERE playlist_collaborations.userid = $1 OR users.id = $1',
       values: [owner],
     };
     const result = await this._pool.query(query);
@@ -36,7 +37,7 @@ class PlaylistService {
     return result.rows;
   }
 
-  async getPlaylistById({ playlistId: id }) {
+  async getPlaylistById(id) {
     const query = {
       text: 'SELECT playlist.id, playlist.name, users.username FROM playlist LEFT JOIN users ON users.id = playlist.owner WHERE playlist.id = $1 ',
       values: [id],
@@ -152,6 +153,7 @@ class PlaylistService {
   }
 
   // ------
+  /*
   async addPlaylistActivities(playlistId, songId, userId, Action) {
     const id = `Activities-${nanoid(16)}`;
     const time = new Date().toISOString();
@@ -181,6 +183,7 @@ class PlaylistService {
     }
     return result.rows;
   }
+  * */
 }
 
 module.exports = PlaylistService;
